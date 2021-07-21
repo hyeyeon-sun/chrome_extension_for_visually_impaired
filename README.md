@@ -1,1 +1,1 @@
-# A-visual-aid-extension-for-the-web-for-the-visually-impaired
+# chrome_extension_for_visually_impaired
