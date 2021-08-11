@@ -1,7 +1,9 @@
 // INCLUDED deepai.min.js as a script tag in HTML file
 
+
 // 개인 API
-deepai.setApiKey('bd06d8eb-777b-4434-afd3-fa45a152bc5b');
+deepai.setApiKey(private_keys);
+
 
 // 나중에 url을 받아야 한다면 입력인자로 url 넣고
 // image : url 로 수정해야 할 것 같다.
