@@ -1,0 +1,22 @@
+{
+  "name": "chrome_extension_for_visually_impaired",
+  "version": "1.0.0",
+  "description": "",
+  "main": "content.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyeyeon-sun/chrome_extension_for_visually_impaired.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hyeyeon-sun/chrome_extension_for_visually_impaired/issues"
+  },
+  "homepage": "https://github.com/hyeyeon-sun/chrome_extension_for_visually_impaired#readme",
+  "dependencies": {
+    "deepai": "^1.0.17"
+  },
+}
