@@ -1,6 +1,6 @@
 // 분석한 문장 가져오기
 // 이 부분 실행하려면 densecap.js 수정해야 한다.
-import { densecapAPI } from "./densecap.js";
+import { densecapAPI } from "./result.js";
 const query = await densecapAPI();
 console.log(query);
 
@@ -23,6 +23,7 @@ app.get('/translate', function (req, res) {
     if (!error && response.statusCode == 200) {
       
       res.writeHead(200, {'Content-Type': 'text/json;charset=utf-8'});
+      console.log(body)
       res.end(body);
       
     } else {

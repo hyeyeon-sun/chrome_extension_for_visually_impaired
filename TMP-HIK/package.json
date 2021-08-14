@@ -1,12 +1,12 @@
 {
-  "name": "check",
+  "name": "Image Captioning in JS",
   "version": "1.0.0",
-  "description": "test for densecapAPI and transAPI",
+  "description": "test for densecapAPI",
   "main": "densecap.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "satelliteheart29",
   "license": "ISC",
-  "type": "module"
+  "devDependencies": {}
 }

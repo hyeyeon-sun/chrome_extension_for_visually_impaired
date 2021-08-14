@@ -1,11 +1,5 @@
 {
-    "manifest_version": 1,
-    "version": "0.0.1",
-    "name": "Densecap API 실행",
-    "description": "최상위 5개의 결과만 가져온다.",
-  
-    "content_scripts": [{
-        "js": ["densecap.js"],
-        "matches": ["https://www.mfds.go.kr/*"]
-    }]
+    "manifest_version": 2,
+    "version": "0.0.2",
+    "name": "Densecap API 실행"
 }
