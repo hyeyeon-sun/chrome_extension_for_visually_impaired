@@ -208,10 +208,29 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],3:[function(require,module,exports){
+
+ 
 var deepai = require("deepai");
 
-const private_keys = // 제거하고 올리기
+const private_keys = 'bd06d8eb-777b-4434-afd3-fa45a152bc5b';// 제거하고 올리기
 deepai.setApiKey(private_keys);
+
+// stopwords 리스트
+// he, she, they 제거함. 필요하다면 다시 추가하면 된다.
+const stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "him", "his", "himself", "her", "hers", "herself", "it", "its", "itself", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
+
+function removeStopWords(str) {
+    str += " ";
+    var res = [];
+    var words = str.split(' ');
+    for(let i = 0 ; i < words.length;i++){
+        let word_clean = words[i].split(".").join("");
+        if(!stopwords.includes(word_clean)) {
+            res.push(word_clean);
+        }
+    }
+    return res;
+};
 
 
 const densecapAPI = async function (URL_LINK){
@@ -223,8 +242,9 @@ const densecapAPI = async function (URL_LINK){
 
     if (idx+4 != URL_LINK.length){
         URL_LINK = URL_LINK.substring(0, idx+4);
+        // 결과가 htt 이렇게 나오는 링크일 경우
         if(URL_LINK.length == 4){
-            return "알 수 없는 값";
+            return "알 수 없는 이미지입니다.";
         }
     }
     
@@ -248,46 +268,36 @@ const densecapAPI = async function (URL_LINK){
 
     // 관련 있는 문장과 관련 없는 문장을 구분한다.
     let related = "";
-    let unrelated = "";
+    // 중복된 결과는 포함하지 않는다.
+    var sentenceArr=[];
 
     for (let i = 0; i < repeat_time; i++){ 
         let sentence = minor["output"]["captions"][i]["caption"];
         let find = false;
-        for (let i = 0; i < standards_length; i++){
-            if(sentence.indexOf(standards[i]) != -1){
-                find = true;
-                break;
+        let many  = false;
+        for (let j = 0; j < standards_length; j++){
+            if(sentence.includes(standards[j]) && !sentence.includes("<unk>")){
+              for(k = 0 ; k < sentenceArr.length; k++){
+                if (sentence == sentenceArr[k]){
+                  many = true;
+                  break;
+                }
+              }
+              find = true;
+              break;
             }
         }
-        if (find) {
+        if (find && !many) {
             related += (sentence + ". ");
-        }
-        else {
-            unrelated += (sentence + ". ");
+            sentenceArr.push(sentence);
         }
     }
-
+    delete sentenceArr;
     // 결과 문장으로는 major 문장과 minor 문장을 합친 것을 도출한다.
     const result = dirtyString +" "+ related;
     return result;
 };
 
-
-// stopwords 리스트
-const stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
-
-function removeStopWords(str) {
-    str += " ";
-    var res = [];
-    var words = str.split(' ');
-    for(let i = 0 ; i < words.length;i++){
-        let word_clean = words[i].split(".").join("");
-        if(!stopwords.includes(word_clean)) {
-            res.push(word_clean);
-        }
-    }
-    return res;
-};
 
 (async function() {
     async function async_load2() {
@@ -302,6 +312,8 @@ function removeStopWords(str) {
     };
     window.attachEvent ? window.attachEvent('onload', async_load2) : window.addEventListener('load', async_load2, false);
 })();
+
+
 },{"deepai":31}],4:[function(require,module,exports){
 module.exports = require('./lib/axios');
 },{"./lib/axios":6}],5:[function(require,module,exports){
@@ -818,6 +830,7 @@ var enhanceError = require('./enhanceError');
  * @param {Object} [response] The response.
  * @returns {Error} The created error.
  */
+
 module.exports = function createError(message, config, code, request, response) {
   var error = new Error(message);
   return enhanceError(error, config, code, request, response);

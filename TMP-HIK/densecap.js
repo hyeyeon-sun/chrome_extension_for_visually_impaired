@@ -1,8 +1,20 @@
-var deepai = require("deepai");
-
-const private_keys =;
 deepai.setApiKey(private_keys);
 
+// stopwords 리스트
+const stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves",  "him", "his", "himself", "her", "hers", "herself", "it", "its", "itself", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
+
+function removeStopWords(str) {
+    str += " ";
+    var res = [];
+    var words = str.split(' ');
+    for(let i = 0 ; i < words.length;i++){
+        let word_clean = words[i].split(".").join("");
+        if(!stopwords.includes(word_clean)) {
+            res.push(word_clean);
+        }
+    }
+    return res;
+};
 
 const densecapAPI = async function (URL_LINK){
     // 이미지 주소 제대로 불러오기
@@ -62,30 +74,13 @@ const densecapAPI = async function (URL_LINK){
     return result;
 };
 
-
-// stopwords 리스트
-const stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
-
-function removeStopWords(str) {
-    str += " ";
-    var res = [];
-    var words = str.split(' ');
-    for(let i = 0 ; i < words.length;i++){
-        let word_clean = words[i].split(".").join("");
-        if(!stopwords.includes(word_clean)) {
-            res.push(word_clean);
-        }
-    }
-    return res;
-};
-
 (async function() {
     async function async_load2() {
         let images = document.getElementsByTagName('img');
         for (let i = 0; i < images.length; i++){
             let sent = densecapAPI(images[i].src);
             sent.then((value) =>{
-                console.log(i);
+                //console.log(i);
                 images[i].alt = value;
             })
         }
