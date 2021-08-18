@@ -298,6 +298,7 @@ const densecapAPI = async function (URL_LINK){
     return result;
 };
 
+var dictObject = {};
 
 (async function() {
     async function async_load2() {
@@ -305,6 +306,7 @@ const densecapAPI = async function (URL_LINK){
         for (let i = 0; i < images.length; i++){
             let sent =  densecapAPI(images[i].src);
             sent.then((value) =>{
+                dictObject[i] = sent;
                 images[i].alt = value;
                 console.log(i, images[i].alt);
             })
