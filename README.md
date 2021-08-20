@@ -1,1 +1,0 @@
-# chrome_extension_for_visually_impaired

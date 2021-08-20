@@ -1909,7 +1909,7 @@ const formData = require('form-data');
 const apiBaseUrl = require('./apiBaseUrl').baseUrl;
 const resultRendering = require('./resultRendering');
 
-const globalObject = Function('return this')();
+const globalObj = typeof window === 'object' ? window : Function('return this')();
 
 /**
  * Create a new instance of DeepAI
