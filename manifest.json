@@ -4,8 +4,22 @@
     "version": "1.0",
     "description": "Image To Text",
 
-    "content_scripts": [{
+    "background": [{
         "matches": ["http://*/*","https://*/*"],
-        "js": ["js/content_script.js"]
-      }]
+        "js": ["bundle.js"]
+      }],
+
+    "oauth2": {
+        "client_id": "---YOUR ID---",
+        "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/authcloud-vision"
+        ]
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; script-src-elem 'self' 'unsafe-inline' https://music.yandex.ru/;"
+    },
+    "permissions": [
+        "identity"
+    ]
 }

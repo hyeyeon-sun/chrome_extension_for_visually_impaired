@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "@google-cloud/vision": "^2.3.7",
+    "google-auth-library": "^7.6.1",
+    "http2": "^3.3.7",
+    "request": "^2.88.2",
+    "retry-request": "^4.2.2"
+  },
+  "name": "new",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
