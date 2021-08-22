@@ -1,14 +1,15 @@
+//dldzm
 var request = require('request');
 var deepai = require("deepai");
-const private_keys = {private_keys};
+const private_keys = '{private_keys}';
 deepai.setApiKey(private_keys);
 
 const headers = {
-    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-    'X-Naver-Client-Id': '{ID}',
-    'X-Naver-Client-Secret': '{Secret}'
+  'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+  'X-Naver-Client-Id': '{ID}',
+  'X-Naver-Client-Secret': '{secret}'
 };
-  
+
 const stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "him", "his", "himself", "her", "hers", "herself", "it", "its", "itself", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
 
 function removeStopWords(str) {
@@ -25,11 +26,14 @@ function removeStopWords(str) {
 };
 
 const densecapAPI = async function (URL_LINK){
-
+    if(URL_LINK.includes("logo")){
+      return "로고 입니다";
+    }
+    
     const major = await deepai.callStandardApi("neuraltalk", {
         image: URL_LINK
     });
- 
+
     const dirtyString = major.output;
     const standards = removeStopWords(dirtyString);
 
@@ -41,6 +45,7 @@ const densecapAPI = async function (URL_LINK){
     const repeat_time = parseInt(minor["output"]["captions"].length/2);
 
     let related = "";
+
     var sentenceArr=[];
 
     for (let i = 0; i < repeat_time; i++){ 
@@ -90,18 +95,18 @@ const densecapAPI = async function (URL_LINK){
                     body : dataString
                 };
 
-                request(options, async function callback(error, response, body) {
-                    if (!error && response.statusCode == 200) {
-                        let result = JSON.parse(body);
-                        images[i].alt = result['message']['result']['translatedText'];
-                    }
-                    else {
-                        images[i].alt = "알 수 없는 이미지입니다.";
-                    }
-                });
+                images[i].alt = request(options, async function callback(error, response, body) {
+                  if (!error && response.statusCode == 200) {
+                      let result = JSON.parse(body);
+                      images[i].alt = result['message']['result']['translatedText'];
+                  }
+                  else {
+                    images[i].alt = "알 수 없는 이미지입니다.";
+                  }
+              });
             })
             .then((val) => {
-                console.log(i, images[i].alt);
+              console.log(i, images[i].alt);
             })
         }
     };

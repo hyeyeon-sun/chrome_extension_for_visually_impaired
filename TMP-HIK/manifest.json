@@ -1,10 +1,9 @@
 {
     "manifest_version": 2,
     "version": "1.0.0",
-    "name": "Image Captioning 실행",
+    "name": "chrome_extension_for_visually_impaired",
     "content_scripts": [{
-        "js": [ "main2.js"],
+        "js": [ "main.js"],
         "matches":  ["<all_urls>"]
     }]
-
 }

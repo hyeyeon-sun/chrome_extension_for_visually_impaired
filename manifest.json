@@ -1,12 +1,28 @@
 {
-    "manifest_version": 2,
-
-    "name": "Modify CSS and HTML",
-    "version": "0.1.0",
-    "description": "Lateral blog post demo extension",
-
+    "manifest_version": 3,
+    "version": "0.0.2",
+    "name": "Densecap API 실행",
     "content_scripts": [{
-        "js": ["content.js", "densecap.js"],
-        "matches": ["https://biz.chosun.com/*"]
-    }]
+        "js": [ "main.js"],
+        "matches":  ["<all_urls>"]
+    }],
+
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+          "16": "/images/get_started16.png",
+          "32": "/images/get_started32.png",
+          "48": "/images/get_started48.png",
+          "128": "/images/get_started128.png"
+        }
+    },
+
+    "icons": {
+        "16": "/images/get_started16.png",
+        "32": "/images/get_started32.png",
+        "48": "/images/get_started48.png",
+        "128": "/images/get_started128.png"
+    },
+    "permissions": ["storage", "activeTab", "scripting"]
+
 }
