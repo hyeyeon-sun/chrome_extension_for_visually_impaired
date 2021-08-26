@@ -91029,7 +91029,6 @@ WError.prototype.cause = function we_cause(c)
 
 },{"assert-plus":305,"core-util-is":339,"extsprintf":354,"util":253}],458:[function(require,module,exports){
 
-
 //dldzm
 const request = require('request');
 const deepai = require("deepai");
@@ -91038,111 +91037,132 @@ deepai.setApiKey(private_keys);
 
 const headers = {
   'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-  'X-Naver-Client-Id': '_GkEcIm4mJmHHwP9nrgC',
-  'X-Naver-Client-Secret': 'O8OvXtUusS'
+  'X-Naver-Client-Id': '3WvS7UX94yDQBUtLWtja',
+  'X-Naver-Client-Secret': '0Wagq7KbQf'
 };
 
 const stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "him", "his", "himself", "her", "hers", "herself", "it", "its", "itself", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
 
 function removeStopWords(str) {
-    str += " ";
-    var res = [];
-    var words = str.split(' ');
-    for(let i = 0 ; i < words.length;i++){
-        let word_clean = words[i].split(".").join("");
-        if(!stopwords.includes(word_clean)) {
-            res.push(word_clean);
-        }
+  str += " ";
+  var res = [];
+  var words = str.split(' ');
+  for(let i = 0 ; i < words.length;i++){
+    let word_clean = words[i].split(".").join("");
+    if(!stopwords.includes(word_clean)) {
+      res.push(word_clean);
     }
-    return res;
+  }
+  return res;
 };
 
-var densecapAPI = async function (URL_LINK){
-    if(URL_LINK.includes("profile")){
-      return "프로필 사진입니다.";
-    }
-    else if(URL_LINK.includes("logo")){
-      return "로고입니다.";
-    }
-    
-    const major = await deepai.callStandardApi("neuraltalk", {
-        image: URL_LINK
-    });
+var densecapAPI = async function (URL_LINK){   
+  const major = await deepai.callStandardApi("neuraltalk", {
+    image: URL_LINK
+  });
 
-    const dirtyString = major.output;
-    const standards = removeStopWords(dirtyString);
+  const dirtyString = major.output;
+  const standards = removeStopWords(dirtyString);
 
-    const minor = await deepai.callStandardApi("densecap", {
-        image : URL_LINK
-    });
+  const minor = await deepai.callStandardApi("densecap", {
+    image : URL_LINK
+  });
 
-    const standards_length = standards.length;
-    const repeat_time = parseInt(minor["output"]["captions"].length/2);
+  const standards_length = standards.length;
+  const repeat_time = parseInt(minor["output"]["captions"].length/2);
 
-    let related = "";
-    var sentenceArr=[];
+  let related = "";
+  var sentenceArr=[];
 
-    for (let i = 0; i < repeat_time; i++){ 
-        let sentence = minor["output"]["captions"][i]["caption"];
-        let find = false;
-        let many  = false;
-        for (let j = 0; j < standards_length; j++){
-            if(sentence.includes(standards[j]) && !sentence.includes("<unk>")){
-              for(k = 0 ; k < sentenceArr.length; k++){
-                if (sentence == sentenceArr[k]){
-                  many = true;
-                  break;
-                }
-              }
-              find = true;
-              break;
-            }
+  for (let i = 0; i < repeat_time; i++){ 
+    let sentence = minor["output"]["captions"][i]["caption"];
+    let find = false;
+    let many  = false;
+    for (let j = 0; j < standards_length; j++){
+      if(sentence.includes(standards[j]) && !sentence.includes("<unk>")){
+        for(k = 0 ; k < sentenceArr.length; k++){
+          if (sentence == sentenceArr[k]){
+            many = true;
+            break;
+          }
         }
-        if (find && !many) {
-            related += (sentence + ". ");
-            sentenceArr.push(sentence);
-        }
+        find = true;
+        break;
+      }
     }
-    delete sentenceArr;
-
-    const result = dirtyString +" "+ related;
-    return result;
+    if (find && !many) {
+      related += (sentence + ". ");
+      sentenceArr.push(sentence);
+    }
+  }
+  delete sentenceArr;
+  const result = dirtyString +" "+ related;
+  return result;
 };
 
 (async function() {
-  async function async_load2() {
-    let images = document.getElementsByTagName('img');
-    for (let i = 0; i < images.length; i++){
-      let ImgCptResult =  densecapAPI(images[i].src);
+  async function async_load() {
+    (function() {
+      return new Promise(function(resolve, reject) {
+        let HTMLdictionary = {};
+        let images = document.getElementsByTagName('img');
 
-      ImgCptResult
-      .then((value) =>{
-          images[i].alt = value;
-          dataString = `source=en&target=ko&text=${value}`;
-      })
-      .then((val) => {
-        var options = {
-          url : 'https://newimgcpt.herokuapp.com/https://openapi.naver.com/v1/papago/n2mt',
-          method : 'POST',
-          headers : headers,
-          body : dataString
-        };
-
-        images[i].alt = request(options, async function callback(error, response, body) {
-          if (!error && response.statusCode == 200) {
-            let result = JSON.parse(body);
-            images[i].alt = result['message']['result']['translatedText'];
-          }
-          else {
-            images[i].alt = "알 수 없는 이미지입니다.";
+        // 일차적으로 프로필 사진과 로고는 함수를 통해 돌리지 않는다.
+        for (let j = 0; j < images.length; j++) {
+          // 
+          if ((images[j].alt === "") || (images[j].alt === null) || (images[j].alt === undefined)) {
+            HTMLdictionary[j] = unescape(images[j].src);
+            console.log(j, HTMLdictionary[j]);
+          } else if (images[j].alt.includes("profile")) {
+            images[j].alt = "프로필 사진입니다.";
+          } else if (images[j].alt.includes("logo")) {
+            images[j].alt = "로고 사진입니다.";
+          } else if (images[j].alt.includes("thumbnail")) {
+            images[j].alt = "썸네일 사진입니다.";
           }
         }
-      );
-        console.log(i, images[i].alt);
-      })
-    }
-  };
-  window.attachEvent ? window.attachEvent('onload', async_load2) : window.addEventListener('load', async_load2, false);
+        console.log("변환 과정이 필요한 것들 :", HTMLdictionary);
+        console.log(Object.keys(HTMLdictionary).length);
+
+        for (var i in HTMLdictionary) {
+          console.log(i);
+          let ImgCptResult = densecapAPI(images[i].src);
+
+          ImgCptResult
+          //1 then
+          .then((value) => {
+            images[i].alt = value;
+            dataString = `source=en&target=ko&text=${value}`;
+          })
+          //2 then
+          .then((val) => {
+            var options = {
+              // After 5 redirects, redirects are not followed any more. The redirect response is sent back
+              // to the browser, which can choose to follow the redirect (handled automatically by the browser).
+              url: 'https://cors-max-5.herokuapp.com/https://openapi.naver.com/v1/papago/n2mt',
+              method: 'POST',
+              headers: headers,
+              body: dataString
+            };
+
+            images[i].alt = request(options, async function callback(error, response, body) {
+              if (!error && response.statusCode == 200) {
+                let result = JSON.parse(body);
+                images[i].alt = result['message']['result']['translatedText'];
+              }
+            })
+          })
+          // 3 then
+          .then(() => {
+            delete HTMLdictionary[i];
+            console.log(i, images[i].alt);
+          }); // then 끝
+
+        } // dictionary for 닫기
+      }); // return Promise 닫기
+    })(); // (function(){})(); 닫기
+  } // async_load 선언 닫기
+  window.attachEvent ? window.attachEvent('onload', async_load) : window.addEventListener('load', async_load, false);
 })();
 
 
