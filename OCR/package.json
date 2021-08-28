@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@google-cloud/vision": "^2.3.7",
+    "axios": "^0.21.1",
+    "browserify": "^17.0.0",
     "google-auth-library": "^7.6.1",
     "http2": "^3.3.7",
     "request": "^2.88.2",

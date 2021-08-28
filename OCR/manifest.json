@@ -2,24 +2,9 @@
     "manifest_version": 3,
     "name": "ITT",
     "version": "1.0",
-    "description": "Image To Text",
-
-    "background": [{
-        "matches": ["http://*/*","https://*/*"],
-        "js": ["bundle.js"]
-      }],
-
-    "oauth2": {
-        "client_id": "---YOUR ID---",
-        "scopes": [
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/authcloud-vision"
-        ]
-    },
-    "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'; script-src-elem 'self' 'unsafe-inline' https://music.yandex.ru/;"
-    },
-    "permissions": [
-        "identity"
-    ]
+    "description": "Image To Text",    
+    "content_scripts": [{
+        "js": [ "background.js"],
+        "matches":  ["<all_urls>"]
+    }]
 }
