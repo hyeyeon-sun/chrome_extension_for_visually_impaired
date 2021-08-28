@@ -1,12 +1,25 @@
 {
-  "name": "Image Captioning in JS",
-  "version": "1.0.1",
-  "description": "test for densecapAPI",
+  "name": "chrome_extension_for_visually_impaired",
+  "version": "1.0.0",
+  "description": "",
   "main": "main.js",
+  "dependencies": {
+    "package.json": "^2.0.1",
+    "request": "^2.88.2",
+    "require": "^2.4.20"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "satelliteheart29",
-  "license": "ISC"
-
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/satelliteheart/chrome_extension_for_visually_impaired.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/satelliteheart/chrome_extension_for_visually_impaired/issues"
+  },
+  "homepage": "https://github.com/satelliteheart/chrome_extension_for_visually_impaired#readme"
 }
