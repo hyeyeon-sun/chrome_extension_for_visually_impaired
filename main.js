@@ -91037,11 +91037,35 @@ deepai.setApiKey(private_keys);
 
 const headers = {
   'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-  'X-Naver-Client-Id': '3WvS7UX94yDQBUtLWtja',
-  'X-Naver-Client-Secret': '0Wagq7KbQf'
+  'X-Naver-Client-Id': '_GkEcIm4mJmHHwP9nrgC',
+  'X-Naver-Client-Secret': 'O8OvXtUusS'
 };
 
 const stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "him", "his", "himself", "her", "hers", "herself", "it", "its", "itself", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
+
+// 이미지 확장자 참고 : https://itfix.tistory.com/78 
+const imgs_extension = ['gif', 'jpg', 'jpeg', 'png', 'bmp' ,'ico', 'apng', 'psd', 'pdd', 'raw', 'svg'];
+async function isImgLink(URL_LINK) {
+  var bool = false;
+  if (URL_LINK === undefined){
+    return bool;
+  }
+  var ext = URL_LINK.substring(URL_LINK.lastIndexOf('.') + 1);
+  if (!ext){
+    return bool;
+  }
+  else if (URL_LINK.includes("download") || URL_LINK.includes("img") || URL_LINK.includes("image")){
+    bool = true;
+    return bool;
+  }
+  ext = ext.toLocaleLowerCase();
+  imgs_extension.forEach( function(element) {
+    if (ext.includes(element)){
+      bool = true;
+    }
+  });
+  return bool;
+}
 
 function removeStopWords(str) {
   str += " ";
@@ -91096,9 +91120,61 @@ var densecapAPI = async function (URL_LINK){
     }
   }
   delete sentenceArr;
-  const result = dirtyString +" "+ related;
+  const result = "[ic] " + dirtyString +" "+ related;
   return result;
 };
+
+
+var selectImg = async function(images, HTMLdictionary) {
+  for (let i = 0; i < 10; i++) {
+    console.log(i)
+    if ((images[i].alt === "") || (images[i].alt === null) || (images[i].alt === undefined)) {
+      let bool = false;
+      
+      var link = ((images[i].src == undefined)||(images[i].src == "")) ? images[i].baseURI : images[i].src;
+      bool = isImgLink(link);
+
+      bool  //이미지 링크가 맞다면
+      .then(function() {
+        console.log(i, "이미지 링크인지 결과 : ", bool, link);
+        if (bool) {
+          HTMLdictionary[i] = unescape(link);
+          console.log("이미지 링크임 : ",i, HTMLdictionary[i]);
+        }
+        else{
+          console.log("이미지 링크가 아님 : ", i, link);
+          // 로고 이미지 파일에 링크가 연결되어 있는 경우
+          var firstDot = link.indexOf(".");
+          // https://www.youtube.com/ 이런 형식일 경우
+          if (link.slice(firstDot-3, firstDot) === "www"){
+            link = link.slice(firstDot+1);
+            var lastDot = link.indexOf(".");
+            link = link.slice(0, lastDot);  
+          }
+          else{
+            //https://velog.io/ 이런 형식일 경우
+            link = link.slice(0, firstDot); // 결과
+            var lastSlash = link.lastIndexOf('/');
+            link = link.slice(lastSlash+1, firstDot);
+          }
+        }
+      })
+      .then(()=> {if(bool){
+        images[i].alt = `${link} 의 로고입니다. 클릭하면 ${link} 사이트로 연결됩니다.`;
+        console.log("이미지 링크가 아니여서 분석한 결과 : ", images[i].alt)
+      }})
+      
+
+    } else if (images[i].alt.includes("profile")) {
+      images[i].alt = "프로필 사진입니다.";
+    } else if (images[i].alt.includes("logo")) {
+      images[i].alt = "로고 사진입니다.";
+    } else if (images[i].alt.includes("thumbnail")) {
+      images[i].alt = "썸네일 사진입니다.";
+    }
+  }
+};
+
 
 (async function() {
   async function async_load() {
@@ -91106,62 +91182,53 @@ var densecapAPI = async function (URL_LINK){
       return new Promise(function(resolve, reject) {
         let HTMLdictionary = {};
         let images = document.getElementsByTagName('img');
-
-        // 일차적으로 프로필 사진과 로고는 함수를 통해 돌리지 않는다.
-        for (let j = 0; j < images.length; j++) {
-          // 
-          if ((images[j].alt === "") || (images[j].alt === null) || (images[j].alt === undefined)) {
-            HTMLdictionary[j] = unescape(images[j].src);
-            console.log(j, HTMLdictionary[j]);
-          } else if (images[j].alt.includes("profile")) {
-            images[j].alt = "프로필 사진입니다.";
-          } else if (images[j].alt.includes("logo")) {
-            images[j].alt = "로고 사진입니다.";
-          } else if (images[j].alt.includes("thumbnail")) {
-            images[j].alt = "썸네일 사진입니다.";
-          }
-        }
-        console.log("변환 과정이 필요한 것들 :", HTMLdictionary);
-        console.log(Object.keys(HTMLdictionary).length);
-
-        for (var i in HTMLdictionary) {
-          console.log(i);
-          let ImgCptResult = densecapAPI(images[i].src);
-
-          ImgCptResult
-          //1 then
-          .then((value) => {
-            images[i].alt = value;
-            dataString = `source=en&target=ko&text=${value}`;
-          })
-          //2 then
-          .then((val) => {
-            var options = {
-              // After 5 redirects, redirects are not followed any more. The redirect response is sent back
-              // to the browser, which can choose to follow the redirect (handled automatically by the browser).
-              url: 'https://cors-max-5.herokuapp.com/https://openapi.naver.com/v1/papago/n2mt',
-              method: 'POST',
-              headers: headers,
-              body: dataString
-            };
-
-            images[i].alt = request(options, async function callback(error, response, body) {
-              if (!error && response.statusCode == 200) {
-                let result = JSON.parse(body);
-                images[i].alt = result['message']['result']['translatedText'];
-              }
+  
+        let selectResult = selectImg(images, HTMLdictionary);
+        selectResult
+        .then(function(){
+          console.log("변환 과정이 필요한 것들 :", HTMLdictionary);
+          console.log(Object.keys(HTMLdictionary).length);
+        }) // then 닫기
+        .then(function(){
+          for (var i in HTMLdictionary) {
+            console.log(i);
+            let ImgCptResult = densecapAPI(images[i].src);
+  
+            ImgCptResult
+            //1 then
+            .then((value) => {
+              images[i].alt = value;
+              dataString = `source=en&target=ko&text=${value}`;
             })
-          })
-          // 3 then
-          .then(() => {
-            delete HTMLdictionary[i];
-            console.log(i, images[i].alt);
-          }); // then 끝
-
-        } // dictionary for 닫기
-      }); // return Promise 닫기
-    })(); // (function(){})(); 닫기
-  } // async_load 선언 닫기
+            //2 then
+            .then((val) => {
+              var options = {
+                url: 'https://cors-max-5.herokuapp.com/https://openapi.naver.com/v1/papago/n2mt',
+                method: 'POST',
+                headers: headers,
+                body: dataString
+              };
+  
+              images[i].alt = request(options, async function callback(error, response, body) {
+                if (!error && response.statusCode == 200) {
+                  let result = JSON.parse(body);
+                  images[i].alt = result['message']['result']['translatedText'];
+                }
+                else{
+                  // 모든 예외상황이 제거됨.
+                  images[i].alt = "알 수 없는 이미지입니다.";
+                }
+              })
+            })
+            // 3 then
+            .then(() => {
+              console.log(i, images[i].alt);
+            }); // then 끝
+          }     // dictionary for 닫기
+        })      // then 닫기
+      });       // return Promise 닫기
+    })();       // (function(){})(); 닫기
+  }             // async_load 선언 닫기
   window.attachEvent ? window.attachEvent('onload', async_load) : window.addEventListener('load', async_load, false);
 })();
 
