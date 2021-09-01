@@ -208,25 +208,206 @@
   process.umask = function() { return 0; };
   
   },{}],3:[function(require,module,exports){
+  // Copyright Joyent, Inc. and other Node contributors.
+  //
+  // Permission is hereby granted, free of charge, to any person obtaining a
+  // copy of this software and associated documentation files (the
+  // "Software"), to deal in the Software without restriction, including
+  // without limitation the rights to use, copy, modify, merge, publish,
+  // distribute, sublicense, and/or sell copies of the Software, and to permit
+  // persons to whom the Software is furnished to do so, subject to the
+  // following conditions:
+  //
+  // The above copyright notice and this permission notice shall be included
+  // in all copies or substantial portions of the Software.
+  //
+  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+  // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+  // NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+  // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+  // USE OR OTHER DEALINGS IN THE SOFTWARE.
+  
+  'use strict';
+  
+  // If obj.hasOwnProperty has been overridden, then calling
+  // obj.hasOwnProperty(prop) will break.
+  // See: https://github.com/joyent/node/issues/1707
+  function hasOwnProperty(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+  }
+  
+  module.exports = function(qs, sep, eq, options) {
+    sep = sep || '&';
+    eq = eq || '=';
+    var obj = {};
+  
+    if (typeof qs !== 'string' || qs.length === 0) {
+      return obj;
+    }
+  
+    var regexp = /\+/g;
+    qs = qs.split(sep);
+  
+    var maxKeys = 1000;
+    if (options && typeof options.maxKeys === 'number') {
+      maxKeys = options.maxKeys;
+    }
+  
+    var len = qs.length;
+    // maxKeys <= 0 means that we should not limit keys count
+    if (maxKeys > 0 && len > maxKeys) {
+      len = maxKeys;
+    }
+  
+    for (var i = 0; i < len; ++i) {
+      var x = qs[i].replace(regexp, '%20'),
+          idx = x.indexOf(eq),
+          kstr, vstr, k, v;
+  
+      if (idx >= 0) {
+        kstr = x.substr(0, idx);
+        vstr = x.substr(idx + 1);
+      } else {
+        kstr = x;
+        vstr = '';
+      }
+  
+      k = decodeURIComponent(kstr);
+      v = decodeURIComponent(vstr);
+  
+      if (!hasOwnProperty(obj, k)) {
+        obj[k] = v;
+      } else if (isArray(obj[k])) {
+        obj[k].push(v);
+      } else {
+        obj[k] = [obj[k], v];
+      }
+    }
+  
+    return obj;
+  };
+  
+  var isArray = Array.isArray || function (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+  };
+  
+  },{}],4:[function(require,module,exports){
+  // Copyright Joyent, Inc. and other Node contributors.
+  //
+  // Permission is hereby granted, free of charge, to any person obtaining a
+  // copy of this software and associated documentation files (the
+  // "Software"), to deal in the Software without restriction, including
+  // without limitation the rights to use, copy, modify, merge, publish,
+  // distribute, sublicense, and/or sell copies of the Software, and to permit
+  // persons to whom the Software is furnished to do so, subject to the
+  // following conditions:
+  //
+  // The above copyright notice and this permission notice shall be included
+  // in all copies or substantial portions of the Software.
+  //
+  // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+  // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+  // NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+  // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+  // USE OR OTHER DEALINGS IN THE SOFTWARE.
+  
+  'use strict';
+  
+  var stringifyPrimitive = function(v) {
+    switch (typeof v) {
+      case 'string':
+        return v;
+  
+      case 'boolean':
+        return v ? 'true' : 'false';
+  
+      case 'number':
+        return isFinite(v) ? v : '';
+  
+      default:
+        return '';
+    }
+  };
+  
+  module.exports = function(obj, sep, eq, name) {
+    sep = sep || '&';
+    eq = eq || '=';
+    if (obj === null) {
+      obj = undefined;
+    }
+  
+    if (typeof obj === 'object') {
+      return map(objectKeys(obj), function(k) {
+        var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+        if (isArray(obj[k])) {
+          return map(obj[k], function(v) {
+            return ks + encodeURIComponent(stringifyPrimitive(v));
+          }).join(sep);
+        } else {
+          return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+        }
+      }).join(sep);
+  
+    }
+  
+    if (!name) return '';
+    return encodeURIComponent(stringifyPrimitive(name)) + eq +
+           encodeURIComponent(stringifyPrimitive(obj));
+  };
+  
+  var isArray = Array.isArray || function (xs) {
+    return Object.prototype.toString.call(xs) === '[object Array]';
+  };
+  
+  function map (xs, f) {
+    if (xs.map) return xs.map(f);
+    var res = [];
+    for (var i = 0; i < xs.length; i++) {
+      res.push(f(xs[i], i));
+    }
+    return res;
+  }
+  
+  var objectKeys = Object.keys || function (obj) {
+    var res = [];
+    for (var key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) res.push(key);
+    }
+    return res;
+  };
+  
+  },{}],5:[function(require,module,exports){
+  'use strict';
+  
+  exports.decode = exports.parse = require('./decode');
+  exports.encode = exports.stringify = require('./encode');
+  
+  },{"./decode":3,"./encode":4}],6:[function(require,module,exports){
+
 
   //dldzm
   const axios = require('axios');
   const deepai = require("deepai");
-    
+  const qs = require('querystring');
+  
   const deepai_private_key = {};
   const ocr_private_key  = {};
-
+  ㄴ
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
     'X-Naver-Client-Id': {},
     'X-Naver-Client-Secret': {}
   };
-
+  
   deepai.setApiKey(deepai_private_key);
   const stopwords               = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "him", "his", "himself", "her", "hers", "herself", "it", "its", "itself", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
   const imgs_extension          = ['gif', 'jpg', 'jpeg', 'png', 'bmp' ,'ico', 'apng', 'psd', 'pdd', 'raw', 'svg'];
   
-  var removeStopWords = function(str) {
+  async function removeStopWords(str) {
     str += " ";
     var res = [];
     var words = str.split(' ');
@@ -239,7 +420,7 @@
     return res;
   };
   
-  var isImgLink = async function(URL_LINK) {
+  async function isImgLink(URL_LINK) {
     if (URL_LINK === undefined){
       return false;
     }
@@ -259,23 +440,21 @@
     });
     return bool;
   }
-
-  var selectImg = async function(images) {
+  
+  async function selectImg(images) {
     let tempDictionary = {};
-    for (let key = 0; key < 5; key++) { /////////////////여기서 key < images.length로 바꿔야 함
-      // alt값이 비어있는 경우만 분석함
+    for (let key = 0; key < images.length; key++) { 
       if (images[key].alt === "") {
         let link = images[key].src;
         isImgLink(link)
         .then(function(result) {
-          //이미지가 맞다면 dictionary에 추가함
           if (result) {
             tempDictionary[key] = unescape(link);
           }
-          //이미지가 아니라면 링크를 분석해 
           else{
             var firstDot = link.indexOf(".");
-            if (link.slice(firstDot-3, firstDot) === "www"){ // https://www.youtube.com/ 이런 형식일 경우
+            // https://www.youtube.com/ 이런 형식일 경우
+            if (link.slice(firstDot-3, firstDot) === "www"){ 
               link = link.slice(firstDot+1);
               var lastDot = link.indexOf(".");
               link = link.slice(0, lastDot);  
@@ -300,7 +479,7 @@
     return tempDictionary;
   };
     
-  var densecapAPI = async function(URL_LINK){
+  async function densecapAPI(URL_LINK){
     const major = await deepai.callStandardApi("neuraltalk", {
       image: URL_LINK
     })//.catch((err)=> {console.log(err);return "알 수 없는 이미지 입니다."} );
@@ -309,13 +488,13 @@
     })//.catch((err)=> {console.log(err);return "알 수 없는 이미지 입니다."} );
   
     const dirtyString = major.output;
-    const standards = removeStopWords(dirtyString);
+    const standards = await removeStopWords(dirtyString);
     const standards_length = standards.length;
     const repeat_time = parseInt(minor["output"]["captions"].length/2);
-
+  
     let related = "";
     var sentenceArr=[];
-
+  
     for (let i = 0; i < repeat_time; i++){ 
       let sentence = minor["output"]["captions"][i]["caption"];
       let find = false;
@@ -341,8 +520,8 @@
     const result = dirtyString +" "+ related;
     return result;
   };
-
-  var ocrAPI = async function(URL_LINK){
+  
+  function ocrAPI (URL_LINK){
     if (URL_LINK.split(';')[0]=='data:image/jpeg'){
       var request_json = {
         "requests": [{
@@ -365,92 +544,118 @@
     else 
       return 'wrong_link';
   };
+  
+  //https://gist.github.com/wooramy/c081f171f0227fa9f8a86d590dc30e7f
+  const TRANSLATE_METHODS = {
+      nmt: 'nmt',
+      smt: 'smt',
+  };
+  
+  class Papago {
+    constructor() {};
 
-
-(async function() {
-  async function async_load() {
-    var images = document.getElementsByTagName('img');
-    let ImgDict = {};
-    
-    selectImg(images)
-    .then((res) => { 
-      ImgDict = res;
-      console.log("변환 과정이 필요한 것들 :", ImgDict);
-    })
-    .then(function(){
-      for(let i in ImgDict){
-        image_link = images[i].src;
-        if (!image_link.includes('banner') && image_link != "" && (image_link.includes('http') || image_link.includes('jpeg'))){
-          console.log(image_link);
-
-          let request_json = ocrAPI(image_link);
-          if (request_json == 'wrong_link')
-            continue;
-          else{
-            const apiCall=`https://cors-max-5.herokuapp.com/https://vision.googleapis.com/v1/images:annotate?key=${ocr_private_key}`;
-            axios.post(apiCall, request_json)
-            .then((res)=>{
-              let result = res.data.responses[0].fullTextAnnotation;
-              if(!result && !images[i].alt){
-                images[i].alt = '글씨가 없거나 확인할 수 없는 이미지입니다';
-              }
-              else{
-                images[i].alt = result.text;
-                console.log("ocr 결과 : ", i, images[i].alt);
-                delete ImgDict[i];
-              } // else
-            })// post
-            .catch((err) => {
-              console.log(err);
-            })
-          } // else
-        } // if
-      } // for
-    })
-    .then(function(){
-      for(let j in ImgDict){
-        console.log(j);
-        let ImgCptResult = densecapAPI(images[j].src);
-        ImgCptResult
-        //1 then
-        .then((value) => {
-          images[j].alt = value;
-          var options = {
-            method: 'POST',
-            headers: headers,
-            body:  `source=en&target=ko&text=${value}`
-          };
-          return options;
-        })
-        .then((options) => {
-          const PapiCAll ='https://cors-max-5.herokuapp.com/https://openapi.naver.com/v1/papago/n2mt';
-          axios.post(PapiCAll, options)
-          .then((error, response, body) =>{
-            if (!error && response.statusCode == 200) {
-              let result = JSON.parse(body);
-              images[j].alt = result['message']['result']['translatedText'];
-            }
-            else{
-              console.log(error);
-            }
-          })
-          .catch((err) => console.log(err))
-        })
-        .then(() => {
-          delete ImgDict[j];
-          console.log("caption 결과 : ", j, images[j].alt);
-        });
-
+    async lookup(term, { method }) {
+      if (term == null) {
+        throw new Error('알 수 없는 값입니다.');
       }
-    })
-  }; // async_load
-  window.attachEvent ? window.attachEvent('onload', async_load) : window.addEventListener('load', async_load, false);
-})();
+      const url = method === TRANSLATE_METHODS.smt ? 'language/translate' : 'papago/n2mt';
+      const params = qs.stringify({
+        source: 'en',
+        target: 'ko',
+        text: term,
+      });
 
-
-  },{"axios":4,"deepai":31}],4:[function(require,module,exports){
+      const config = {
+        baseURL: 'https://cors-max-5.herokuapp.com/https://openapi.naver.com/v1/',
+        headers: headers
+      };
+      const response = await axios.post(url, params, config);
+      return response.data.message.result.translatedText;
+    };
+  };
+  
+  
+  async function transAPI(term, images, i) {
+    const papago = new Papago();
+    const nmtResult = await papago.lookup(term, { method: 'nmt' });
+    images[i].alt = nmtResult;
+  }
+  
+  
+  (async function() {
+    async function async_load() {
+      var images = document.getElementsByTagName('img');
+      var ONocr = true;       // OCR을 키려면 true
+      var ONdeepi = true;     // deepai(image caption)을 키려면 true
+      var timePerImg = 2000;  // 기본 2초 delay
+      let ImgDict = {};
+      if(ONocr) {
+        selectImg(images)
+        .then((res) => { 
+          ImgDict = res;
+          const dictionaryLength =Object.keys(ImgDict).length ;
+          console.log("변환 과정이 필요한 이미지들 :", ImgDict);
+          // Finish: 7.69 s 이미지 3개 돌리는데 걸리는 시간 -> 다음 조건문 적절하게 조절해야 한다.
+          if (dictionaryLength> 20){
+            timePerImg = 4000;
+          }
+          else if ((20 >= dictionaryLength) && (dictionaryLength > 5)){
+            timePerImg = 3000;
+          }
+          else if (dictionaryLength < 5){
+            timePerImg = 1000;
+          }
+        })
+        .then(function(){
+          for(let i in ImgDict){
+            image_link = images[i].src;
+            if (!image_link.includes('banner') && image_link != "" && (image_link.includes('http') || image_link.includes('jpeg') )){
+              let request_json = ocrAPI(image_link);
+              if (request_json == 'wrong_link')
+                continue;
+              else{
+                const apiCall=`https://cors-max-5.herokuapp.com/https://vision.googleapis.com/v1/images:annotate?key=${ocr_private_key}`;
+                axios.post(apiCall, request_json)
+                .then((res)=>{
+                  let result = res.data.responses[0].fullTextAnnotation;
+                  if(!result)
+                    {}
+                  else{
+                    images[i].alt = result.text;
+                    //console.log("ocr 결과 : ", i, images[i].alt);
+                    delete ImgDict[i];
+                  }; // else
+                })// post
+                .catch((err) => {
+                  console.log(err);
+                });
+              }; // else
+            }; // if
+          }; // for
+        }); // then
+      }
+      if(ONdeepi){
+        setTimeout(function(){
+          console.log("몇 초 : ",timePerImg);
+          for(let j in ImgDict){
+            let ImgCptResult = densecapAPI(images[j].src);
+            ImgCptResult
+            .then(function(dairesult){
+              transAPI(dairesult,images,j);
+            })
+            .then(() => {
+              delete ImgDict[j];
+            });
+          };
+        },timePerImg);
+      }
+    }; // async_load
+    window.attachEvent ? window.attachEvent('onload', async_load) : window.addEventListener('load', async_load, false);
+  })();
+  
+  },{"axios":7,"deepai":34,"querystring":5}],7:[function(require,module,exports){
   module.exports = require('./lib/axios');
-  },{"./lib/axios":6}],5:[function(require,module,exports){
+  },{"./lib/axios":9}],8:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -631,7 +836,7 @@
     });
   };
   
-  },{"../core/buildFullPath":12,"../core/createError":13,"./../core/settle":17,"./../helpers/buildURL":21,"./../helpers/cookies":23,"./../helpers/isURLSameOrigin":26,"./../helpers/parseHeaders":28,"./../utils":30}],6:[function(require,module,exports){
+  },{"../core/buildFullPath":15,"../core/createError":16,"./../core/settle":20,"./../helpers/buildURL":24,"./../helpers/cookies":26,"./../helpers/isURLSameOrigin":29,"./../helpers/parseHeaders":31,"./../utils":33}],9:[function(require,module,exports){
   'use strict';
   
   var utils = require('./utils');
@@ -689,7 +894,7 @@
   // Allow use of default import syntax in TypeScript
   module.exports.default = axios;
   
-  },{"./cancel/Cancel":7,"./cancel/CancelToken":8,"./cancel/isCancel":9,"./core/Axios":10,"./core/mergeConfig":16,"./defaults":19,"./helpers/bind":20,"./helpers/isAxiosError":25,"./helpers/spread":29,"./utils":30}],7:[function(require,module,exports){
+  },{"./cancel/Cancel":10,"./cancel/CancelToken":11,"./cancel/isCancel":12,"./core/Axios":13,"./core/mergeConfig":19,"./defaults":22,"./helpers/bind":23,"./helpers/isAxiosError":28,"./helpers/spread":32,"./utils":33}],10:[function(require,module,exports){
   'use strict';
   
   /**
@@ -710,7 +915,7 @@
   
   module.exports = Cancel;
   
-  },{}],8:[function(require,module,exports){
+  },{}],11:[function(require,module,exports){
   'use strict';
   
   var Cancel = require('./Cancel');
@@ -769,14 +974,14 @@
   
   module.exports = CancelToken;
   
-  },{"./Cancel":7}],9:[function(require,module,exports){
+  },{"./Cancel":10}],12:[function(require,module,exports){
   'use strict';
   
   module.exports = function isCancel(value) {
     return !!(value && value.__CANCEL__);
   };
   
-  },{}],10:[function(require,module,exports){
+  },{}],13:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -873,7 +1078,7 @@
   
   module.exports = Axios;
   
-  },{"../helpers/buildURL":21,"./../utils":30,"./InterceptorManager":11,"./dispatchRequest":14,"./mergeConfig":16}],11:[function(require,module,exports){
+  },{"../helpers/buildURL":24,"./../utils":33,"./InterceptorManager":14,"./dispatchRequest":17,"./mergeConfig":19}],14:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -927,7 +1132,7 @@
   
   module.exports = InterceptorManager;
   
-  },{"./../utils":30}],12:[function(require,module,exports){
+  },{"./../utils":33}],15:[function(require,module,exports){
   'use strict';
   
   var isAbsoluteURL = require('../helpers/isAbsoluteURL');
@@ -949,7 +1154,7 @@
     return requestedURL;
   };
   
-  },{"../helpers/combineURLs":22,"../helpers/isAbsoluteURL":24}],13:[function(require,module,exports){
+  },{"../helpers/combineURLs":25,"../helpers/isAbsoluteURL":27}],16:[function(require,module,exports){
   'use strict';
   
   var enhanceError = require('./enhanceError');
@@ -969,7 +1174,7 @@
     return enhanceError(error, config, code, request, response);
   };
   
-  },{"./enhanceError":15}],14:[function(require,module,exports){
+  },{"./enhanceError":18}],17:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -1050,7 +1255,7 @@
     });
   };
   
-  },{"../cancel/isCancel":9,"../defaults":19,"./../utils":30,"./transformData":18}],15:[function(require,module,exports){
+  },{"../cancel/isCancel":12,"../defaults":22,"./../utils":33,"./transformData":21}],18:[function(require,module,exports){
   'use strict';
   
   /**
@@ -1094,7 +1299,7 @@
     return error;
   };
   
-  },{}],16:[function(require,module,exports){
+  },{}],19:[function(require,module,exports){
   'use strict';
   
   var utils = require('../utils');
@@ -1183,7 +1388,7 @@
     return config;
   };
   
-  },{"../utils":30}],17:[function(require,module,exports){
+  },{"../utils":33}],20:[function(require,module,exports){
   'use strict';
   
   var createError = require('./createError');
@@ -1210,7 +1415,7 @@
     }
   };
   
-  },{"./createError":13}],18:[function(require,module,exports){
+  },{"./createError":16}],21:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -1232,7 +1437,7 @@
     return data;
   };
   
-  },{"./../utils":30}],19:[function(require,module,exports){
+  },{"./../utils":33}],22:[function(require,module,exports){
   (function (process){(function (){
   'use strict';
   
@@ -1334,7 +1539,7 @@
   module.exports = defaults;
   
   }).call(this)}).call(this,require('_process'))
-  },{"./adapters/http":5,"./adapters/xhr":5,"./helpers/normalizeHeaderName":27,"./utils":30,"_process":2}],20:[function(require,module,exports){
+  },{"./adapters/http":8,"./adapters/xhr":8,"./helpers/normalizeHeaderName":30,"./utils":33,"_process":2}],23:[function(require,module,exports){
   'use strict';
   
   module.exports = function bind(fn, thisArg) {
@@ -1347,7 +1552,7 @@
     };
   };
   
-  },{}],21:[function(require,module,exports){
+  },{}],24:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -1419,7 +1624,7 @@
     return url;
   };
   
-  },{"./../utils":30}],22:[function(require,module,exports){
+  },{"./../utils":33}],25:[function(require,module,exports){
   'use strict';
   
   /**
@@ -1435,7 +1640,7 @@
       : baseURL;
   };
   
-  },{}],23:[function(require,module,exports){
+  },{}],26:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -1490,7 +1695,7 @@
       })()
   );
   
-  },{"./../utils":30}],24:[function(require,module,exports){
+  },{"./../utils":33}],27:[function(require,module,exports){
   'use strict';
   
   /**
@@ -1506,7 +1711,7 @@
     return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
   };
   
-  },{}],25:[function(require,module,exports){
+  },{}],28:[function(require,module,exports){
   'use strict';
   
   /**
@@ -1519,7 +1724,7 @@
     return (typeof payload === 'object') && (payload.isAxiosError === true);
   };
   
-  },{}],26:[function(require,module,exports){
+  },{}],29:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -1589,7 +1794,7 @@
       })()
   );
   
-  },{"./../utils":30}],27:[function(require,module,exports){
+  },{"./../utils":33}],30:[function(require,module,exports){
   'use strict';
   
   var utils = require('../utils');
@@ -1603,7 +1808,7 @@
     });
   };
   
-  },{"../utils":30}],28:[function(require,module,exports){
+  },{"../utils":33}],31:[function(require,module,exports){
   'use strict';
   
   var utils = require('./../utils');
@@ -1658,7 +1863,7 @@
     return parsed;
   };
   
-  },{"./../utils":30}],29:[function(require,module,exports){
+  },{"./../utils":33}],32:[function(require,module,exports){
   'use strict';
   
   /**
@@ -1687,7 +1892,7 @@
     };
   };
   
-  },{}],30:[function(require,module,exports){
+  },{}],33:[function(require,module,exports){
   'use strict';
   
   var bind = require('./helpers/bind');
@@ -2040,10 +2245,10 @@
     stripBOM: stripBOM
   };
   
-  },{"./helpers/bind":20}],31:[function(require,module,exports){
+  },{"./helpers/bind":23}],34:[function(require,module,exports){
   module.exports = require('./lib/deepai');
   
-  },{"./lib/deepai":35}],32:[function(require,module,exports){
+  },{"./lib/deepai":38}],35:[function(require,module,exports){
   (function (Buffer){(function (){
   'use strict';
   
@@ -2144,7 +2349,7 @@
   module.exports = DeepAI;
   
   }).call(this)}).call(this,{"isBuffer":require("../../../../AppData/Roaming/npm/node_modules/browserify/node_modules/is-buffer/index.js")})
-  },{"../../../../AppData/Roaming/npm/node_modules/browserify/node_modules/is-buffer/index.js":1,"./../utils":38,"./apiBaseUrl":33,"./resultRendering":34,"axios":4,"form-data":39}],33:[function(require,module,exports){
+  },{"../../../../AppData/Roaming/npm/node_modules/browserify/node_modules/is-buffer/index.js":1,"./../utils":41,"./apiBaseUrl":36,"./resultRendering":37,"axios":7,"form-data":42}],36:[function(require,module,exports){
   'use strict';
   
   
@@ -2153,7 +2358,7 @@
       //baseUrl: "http://localhost:8000" // for dev
   }
   
-  },{}],34:[function(require,module,exports){
+  },{}],37:[function(require,module,exports){
   'use strict';
   const apiBaseUrl = require('./apiBaseUrl').baseUrl;
   var WAD_COLORS = [
@@ -2730,7 +2935,7 @@
       renderAnnotatedResultIntoElement: renderAnnotatedResultIntoElement
   };
   
-  },{"./apiBaseUrl":33}],35:[function(require,module,exports){
+  },{"./apiBaseUrl":36}],38:[function(require,module,exports){
   'use strict';
   
   var utils = require('./utils');
@@ -2774,7 +2979,7 @@
   // Allow use of default import syntax in TypeScript
   module.exports.default = deepai;
   
-  },{"./core/DeepAI":32,"./defaults":36,"./helpers/bind":37,"./utils":38}],36:[function(require,module,exports){
+  },{"./core/DeepAI":35,"./defaults":39,"./helpers/bind":40,"./utils":41}],39:[function(require,module,exports){
   'use strict';
   
   var utils = require('./utils');
@@ -2785,7 +2990,7 @@
   
   module.exports = defaults;
   
-  },{"./utils":38}],37:[function(require,module,exports){
+  },{"./utils":41}],40:[function(require,module,exports){
   'use strict';
   
   module.exports = function bind(fn, thisArg) {
@@ -2798,7 +3003,7 @@
       };
   };
   
-  },{}],38:[function(require,module,exports){
+  },{}],41:[function(require,module,exports){
   'use strict';
   
   var bind = require('./helpers/bind');
@@ -3132,9 +3337,9 @@
       trim: trim
   };
   
-  },{"./helpers/bind":37}],39:[function(require,module,exports){
+  },{"./helpers/bind":40}],42:[function(require,module,exports){
   /* eslint-env browser */
   module.exports = typeof self == 'object' ? self.FormData : window.FormData;
   
-  },{}]},{},[3]);
+  },{}]},{},[6]);
   
