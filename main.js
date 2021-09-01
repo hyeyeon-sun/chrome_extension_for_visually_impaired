@@ -396,7 +396,7 @@
   
   const deepai_private_key = {};
   const ocr_private_key  = {};
-  ㄴ
+  
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
     'X-Naver-Client-Id': {},
