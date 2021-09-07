@@ -393,10 +393,8 @@ const axios = require('axios');
 const deepai = require("deepai");
 const qs = require('querystring');
 
-
 const deepai_private_key = {};
 const ocr_private_key  = {};
-
 const headers = {
   'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
   'X-Naver-Client-Id': {},
@@ -481,10 +479,10 @@ async function selectImg(images) {
 async function densecapAPI(URL_LINK){
   const major = await deepai.callStandardApi("neuraltalk", {
     image: URL_LINK
-  })//.catch((err)=> {console.log(err);return "알 수 없는 이미지 입니다."} );
+  })
   const minor = await deepai.callStandardApi("densecap", {
     image : URL_LINK
-  })//.catch((err)=> {console.log(err);return "알 수 없는 이미지 입니다."} );
+  })
 
   const dirtyString = major.output;
   const standards = removeStopWords(dirtyString);
@@ -544,18 +542,17 @@ function ocrAPI(URL_LINK){
     return 'wrong_link';
 };
 
-//https://gist.github.com/wooramy/c081f171f0227fa9f8a86d590dc30e7f
 const TRANSLATE_METHODS = {
     nmt: 'nmt',
     smt: 'smt',
 };
 
-class Papago {
+class Papago_translation {
   constructor() {};
 
   async lookup(term, { method }) {
     if (term == null) {
-      throw new Error('Search term should be provided as lookup arguments');
+      throw new Error('err');
     }
     const url = method === TRANSLATE_METHODS.smt ?
       'language/translate' : 'papago/n2mt';
@@ -574,12 +571,11 @@ class Papago {
   };
 };
 
-async function main(term, images, j) {
-  const papago = new Papago();
-  const nmtResult = await papago.lookup(term, { method: 'nmt' });
-  images[j].alt = nmtResult;
+async function translate(term, images, j) {
+  const papago = new Papago_translation();
+  const result = await papago.lookup(term, { method: 'nmt' });
+  images[j].alt = result;
 };
-
 
 (async function() {
   async function async_load() {
@@ -621,16 +617,16 @@ async function main(term, images, j) {
                 let result = res.data.responses[0].fullTextAnnotation;
                 if(!result){}
                 else{
-                  images[i].alt = result.text;
+                  images[i].alt = result.text.replace(/\-/g,'');
                   delete ImgDict[i];
-                }; // else
-              })// post
+                }; 
+              })
               .catch((err) => {
                 console.log(err);
               });
-            }; // else
-          }; // if
-        }; // for
+            }; 
+          };
+        }; 
       });
     };
     if(ONdeepai){
@@ -640,7 +636,7 @@ async function main(term, images, j) {
           let ImgCptResult = densecapAPI(images[j].src);
           ImgCptResult
           .then(function(dairesult){
-            main(dairesult, images, j);
+            translate(dairesult, images, j);
           })
           .then(() => {
             delete ImgDict[j];
@@ -648,7 +644,7 @@ async function main(term, images, j) {
         }
       },timePerImg);
     };
-  }; // async_load
+  }; 
   window.attachEvent ? window.attachEvent('onload', async_load) : window.addEventListener('load', async_load, false);
 })();
 
