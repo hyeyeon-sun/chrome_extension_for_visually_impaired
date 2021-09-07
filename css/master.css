@@ -1,0 +1,144 @@
+body {
+  border: 2px solid lightgray;
+  width: 400px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  padding-left: 10px;
+  width: 40px;
+}
+
+h1 {
+  font-size: 24px;
+  padding: 10px;
+  color: #8ED7E0;
+}
+
+.Toggle {
+  display: flex;
+  align-items: center;
+  color: silver;
+  border: 2px solid silver;
+  height: 21px;
+  margin-right: 40px;
+  margin-left : 15px;
+}
+
+.Toggle .on, .Toggle .off {
+  cursor: pointer;
+  padding: 2px 7px;
+  font-size: 14px;
+}
+
+.Toggle .off {
+  background-color: red;
+}
+
+.Toggle .active {
+  border-bottom: 0px;
+  /*background-color: grey;*/
+  color: white;
+}
+
+.alt {
+  margin-left: 50px;
+  margin-top : 25px; 
+}
+
+.colorBlind {
+  margin-top : 25px;
+}
+
+.Toggle-a {
+  display: flex;
+  align-items: center;
+  color: silver;
+  border: 2px solid silver;
+  margin-right: 40px;
+  margin-left : 10px;
+  height: 21px;
+}
+
+.Toggle-a .on, .Toggle-a .off {
+  cursor: pointer;
+  padding: 2px 7px;
+  font-size: 14px;
+}
+
+.Toggle-a .off {
+  background-color: red;
+}
+
+.Toggle-a .active {
+  border-bottom: 0px;
+  color: white;
+}
+
+a{
+  font-size: 14px;
+  color: grey;
+  padding: 10px;
+}
+
+ul {
+  list-style: none;
+  margin-bottom: 15px;
+  margin-left: 5px;
+}
+
+li {
+  height: 24px;
+  color: silver;
+  padding: 3px 5px 3px 5px;
+  box-sizing: border-box;
+}
+
+li:hover {
+  color: white;
+  background-color: silver;
+  cursor: pointer;
+}
+
+.active {
+  border-bottom: 2px solid grey;
+  color: grey;
+}
+
+.filter-preview {
+  display: flex;
+}
+
+
+.filter {
+  width: 286px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.filter-img {
+  border: 3px solid darkgrey;
+  width: 235px;
+  height: 100px;
+  background-image: url("/assets/mixed-fruits.jpg");
+  background-size: cover;
+}
+
+p {
+  font-size: 14px;
+  padding: 5px 10px 5px 10px;
+  color: grey;
+  width: 235px;
+  height: 86px;
+}

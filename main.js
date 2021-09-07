@@ -393,12 +393,13 @@ const axios = require('axios');
 const deepai = require("deepai");
 const qs = require('querystring');
 
-const deepai_private_key = {};
-const ocr_private_key  = {};
+const deepai_private_key = "";
+const ocr_private_key    = "";
+
 const headers = {
   'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-  'X-Naver-Client-Id': {},
-  'X-Naver-Client-Secret': {}
+  'X-Naver-Client-Id': '',
+  'X-Naver-Client-Secret': ''
 };
 
 

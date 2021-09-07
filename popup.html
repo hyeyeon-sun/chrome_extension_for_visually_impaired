@@ -1,58 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-      <!-- Title -->
-      
-    <title>Title of extension</title>
-      
-<!-- Imports -->
-      
-<script src="js/jquery.min.js"></script>
-<script src="js/materialize.min.js"></script>
-<script src="js/popup.js"></script>
-<meta charset="UTF-8">
-      
-<link rel="stylesheet" href="css/materialize.min.css">
-<link rel="stylesheet" href="css/style.css">
-      
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-      
+    <meta charset="utf-8">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/master.css">
+    <script src="content.js"></script>
+    <script src="popup.js"></script>
   </head>
-    
-     <!-- Body -->
-    
-    
-  <body style="width:400px;">
-      
-<!--    <p id="title">SEO tools</p>-->
 
-<!-- Accent-colored raised button with ripple -->
+  <body>
+    <header>
+      <div class="header-left">
+        <h1>Web-helper</h1>
+      </div>
 
-<nav class="blue darken-3">
-  <div class="nav-wrapper">
-    <a href="#" class="brand-logo center">웹사이트 도우미 (Materialize demo)</a>
-    <ul id="nav-mobile" class="left hide-on-med-and-down">
-      <li><a href="sass.html">Sass</a></li>
-      <li><a href="badges.html">Components</a></li>
-      <li><a href="collapsible.html">JavaScript</a></li>
-    </ul>
-  </div>
-</nav>
-<!-- NAV END -->
-<div class="row noMargin noPadding">
-  <div class="col s12 noMargin noPadding">
-    <ul class="tabs tabs-fixed-width">
-      <li class="tab col s3"><a class="active blue-text" href="#seolist">일반</a></li>
-      <li class="tab col s3"><a class="blue-text" href="#tab2">설정</a></li>
-    </ul>
-  </div>
+      <a id="about" href="https://github.com/hyeyeon-sun/chrome_extension_for_visually_impaired">About</a>
+    </header>
 
-  <div id="seolist" class="seolist collection noMargin noPadding noBorder scroll"></div>
-  <div id="tab2" class="col s12"><h2>커스터마이징</h2></div>
-
-</div>
-
-
-      
+      <div class="filter-preview">
+        <div class = "alt">
+          <img src = "/images/altFunction.png" width="100"></img>
+          <div class="Toggle-a">
+            <span class="on">On</span>
+            <span class="off active">Off</span>
+          </div>
+        </div>
+        <div class = "colorBlind">
+          <img src = "/images/color-blind.JPG" width="100"></img>
+        <div class="Toggle">
+          <span class="on">On</span>
+          <span class="off active">Off</span>
+        </div>
+        </div>
+        <ul class="filter-list">
+          <li id="적색맹">적색맹</li>
+          <li id="적색약">적색약</li>
+          <li id="녹색맹">녹색맹</li>
+          <li id="녹색약">녹색약</li>
+          <li id="청색맹">청색맹</li>
+          <li id="청색약">청색약</li>
+          <li id="색맹">색맹</li>
+          <li id="색약">색약</li>
+        </ul>
+      </div>
   </body>
 </html>
