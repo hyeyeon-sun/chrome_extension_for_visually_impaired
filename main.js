@@ -388,25 +388,33 @@ exports.encode = exports.stringify = require('./encode');
 
 },{"./decode":3,"./encode":4}],6:[function(require,module,exports){
 
-//dldzm
+// 코드 시작
 const axios = require('axios');
 const deepai = require("deepai");
 const qs = require('querystring');
 
+// private key 입력
+// deepai : https://deepai.org/machine-learning-model/densecap
+// ocr    : https://cloud.google.com/vision
 const deepai_private_key = "";
 const ocr_private_key    = "";
 
+// papago : https://developers.naver.com/docs/papago/README.md
 const headers = {
   'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
   'X-Naver-Client-Id': '',
   'X-Naver-Client-Secret': ''
 };
 
-
 deepai.setApiKey(deepai_private_key);
 const stopwords               = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "him", "his", "himself", "her", "hers", "herself", "it", "its", "itself", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"];
 const imgs_extension          = ['gif', 'jpg', 'jpeg', 'png', 'bmp' ,'ico', 'apng', 'psd', 'pdd', 'raw', 'svg'];
 
+/*
+불용어를 제거하는 함수
+
+불용어를 제거한 문장을 return 합니다
+*/
 var removeStopWords = function(str) {
   str += " ";
   var res = [];
@@ -420,6 +428,11 @@ var removeStopWords = function(str) {
   return res;
 };
 
+/*
+이미지 링크인지 판별하는 함수
+
+배너 이미지나 imgs_extension에 정의되어 있지 않는 이미지 확장자라면 false를 return한다
+*/
 async function isImgLink(URL_LINK) {
   if (URL_LINK === undefined){
     return false;
@@ -441,6 +454,17 @@ async function isImgLink(URL_LINK) {
   return bool;
 }
 
+
+/*
+판별할 이미지 source를 골라내는 함수
+
+1. 이미지 값에 이미 alt값이 넣어져 있는 경우
+2. 이미지를 통해 링크로 들어가게 하는 경우
+3. 프로필 이미지, 로고 이미지, 썸네일 이미지의 경우
+
+다음 경우는 간단한 alt값을 넣어주어 페이지 로딩 속도가 느려지는 것을 막는다
+이러한 경우에 포함되지 않는 이미지들을 선별해내는 함수이다
+*/
 async function selectImg(images) {
   let tempDictionary = {};
   for (let key = 0; key < images.length; key++) {
@@ -453,12 +477,12 @@ async function selectImg(images) {
         }
         else{
           var firstDot = link.indexOf(".");
-          if (link.slice(firstDot-3, firstDot) === "www"){ // https://www.youtube.com/ 이런 형식일 경우
+          if (link.slice(firstDot-3, firstDot) === "www"){
             link = link.slice(firstDot+1);
             var lastDot = link.indexOf(".");
             link = link.slice(0, lastDot);  
           }
-          else{ //https://velog.io/ 이런 형식일 경우
+          else{
             link = link.slice(0, firstDot);
             var lastSlash = link.lastIndexOf('/');
             link = link.slice(lastSlash+1, firstDot);
@@ -469,15 +493,32 @@ async function selectImg(images) {
       .catch((err) => {
         console.log(key, err, tempDictionary[key])
       })
-    } // if
+    }
     else if (images[key].src.includes("profile"))   { images[key].alt = "프로필 사진입니다."; } 
     else if (images[key].src.includes("logo"))      { images[key].alt = "로고 사진입니다.";   } 
     else if (images[key].src.includes("thumbnail")) { images[key].alt = "썸네일 사진입니다."; }
   }
   return tempDictionary;
 };
-  
-async function densecapAPI(URL_LINK){
+
+/*
+DeepAI 에서 image Caption 기술을 API로 받아오는 함수
+
+자세한 기능은 다음을 참고한다
+DenseCap API      : https://deepai.org/machine-learning-model/densecap
+  - 이미지를 분석하여 이미지를 설명하는 다수의 문장을 가져온다
+Neural Talk 2 API : https://deepai.org/machine-learning-model/neuraltalk
+  - 이미지를 분석하여 이미지를 설명하는 대표적인 한 문장을 가져온다
+
+Neural Talk 2 API를 통해 이미지를 설명하는 대표적인 한 문장을 받아와 불용어를 제거한다
+불용어를 제거하는 과정을 거치게 되면 이미지를 설명하는 대표적인 명사들이 결과로 남는데
+이러한 명사들이 포함되어 있는 DenseCap API 결과를 모아 Neural Talk 2 API로 받아온 문장에
+더해 이미지를 서술하는 여러 문장을 return한다
+
+이 과정 속에서 모든 문장은 영어로 나오는데 한국어 사용자를 위해 translate 함수를 이용해
+번역한 결과를 이미지 alt값에 넣어주는 역할을 한다
+*/
+async function DeepAI(URL_LINK){
   const major = await deepai.callStandardApi("neuraltalk", {
     image: URL_LINK
   })
@@ -518,6 +559,15 @@ async function densecapAPI(URL_LINK){
   const result = dirtyString +" "+ related;
   return result;
 };
+
+/*
+이미지에서 텍스트를 감지하고 추출하는 함수
+
+자세한 기능은 다음을 참고한다.
+Vision API(OCR)   : https://cloud.google.com/vision/docs/ocr?hl=ko
+
+이미지 속 텍스트를 감지하고 추출하는 역할을 한다
+*/
 
 function ocrAPI(URL_LINK){
   if (URL_LINK.split(';')[0]=='data:image/jpeg'){
@@ -572,6 +622,11 @@ class Papago_translation {
   };
 };
 
+/*
+번역 함수
+
+DeepAI 함수에서 내부 결과로 영어 문장이 나오는데 이를 자연스러운 한국어로 바꿔주는 역할을 한다
+*/
 async function translate(term, images, j) {
   const papago = new Papago_translation();
   const result = await papago.lookup(term, { method: 'nmt' });
@@ -634,7 +689,7 @@ async function translate(term, images, j) {
       setTimeout(function(){
         for(let j in ImgDict){
           console.log(j);
-          let ImgCptResult = densecapAPI(images[j].src);
+          let ImgCptResult = DeepAI(images[j].src);
           ImgCptResult
           .then(function(dairesult){
             translate(dairesult, images, j);
